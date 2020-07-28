@@ -1,10 +1,13 @@
 @file:Suppress("DEPRECATION")
 package com.example.appthermometerfrag
 
+import android.net.DhcpInfo
+import android.net.wifi.WifiManager
 import android.os.AsyncTask
 import android.os.StrictMode
 import timber.log.Timber
-import java.io.*
+import java.io.IOException
+import java.util.*
 
 
 class ConnectToArduinoAPAndConfigure(val connectToAPArduino: ConnectToAP, val ssid:String, val passwd: String) : AsyncTask<Int, String?, String>() , WifiController.WiFiOperationProgress {
@@ -96,7 +99,7 @@ class ConnectToArduinoAPAndConfigure(val connectToAPArduino: ConnectToAP, val ss
 
         responseFromThermometer = null
 
-        Timber.i("doInBackground timeout=${timeout}")
+        Timber.i("SSID=[$ssid] PASSWD=${passwd}doInBackground timeout=${timeout} " )
         try {
             var fase = 1
 
@@ -139,8 +142,17 @@ class ConnectToArduinoAPAndConfigure(val connectToAPArduino: ConnectToAP, val ss
 
                     3-> { //
                         if (  WifiController.reconnectWiFiNetwork(this, ArduinoWifiDevice.APDefaultSSID, "REDE_ARDUINO") ) {
+                            val ipAddress = WifiController.wifiManager.getConnectionInfo().getIpAddress()
+                            val strIP = String.format(
+                                "%d.%d.%d.%d",
+                                ipAddress and 0xff,
+                                ipAddress shr 8 and 0xff,
+                                ipAddress shr 16 and 0xff,
+                                ipAddress shr 24 and 0xff
+                            )
+
                             if (WifiController.isConnectedTo(ArduinoWifiDevice.APDefaultSSID)) {
-                                Timber.i("Estamos conectado na rede ${ArduinoWifiDevice.APDefaultSSID}")
+                                Timber.i("Estamos conectado na rede ${ArduinoWifiDevice.APDefaultSSID}   IP:${strIP}")
                                 fase = 4
                                 continue@process
                             } else {
@@ -214,6 +226,9 @@ class ConnectToArduinoAPAndConfigure(val connectToAPArduino: ConnectToAP, val ss
         val PARAM_TIMEOUT_CLIENT_WAITING_SOCKET = 240
         val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
         StrictMode.setThreadPolicy(policy)
+
+
+        Timber.i("configuraThermometer SSID=${ssid}  PASSWD=${passwd}")
 
         var response: String? = null
         var commandToSend : String

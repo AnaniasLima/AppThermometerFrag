@@ -19,7 +19,6 @@ import android.os.StrictMode
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.android.synthetic.main.fragment_find_mac.*
 import timber.log.Timber
 import java.io.*
 import java.lang.Thread.sleep
@@ -116,13 +115,13 @@ object WifiController  {
                     s=null
                 }
             } catch (e: UnknownHostException) {
-                Timber.e("UnknownHostException")
+                Timber.e("UnknownHostException : ${e.message}")
             } catch (e: IOException) {
-                Timber.e("IOException")
+                Timber.e("IOException : ${e.message}")
             } catch (e: SecurityException) {
-                Timber.e("SecurityException")
+                Timber.e("SecurityException : ${e.message}")
             } catch (e: IllegalArgumentException) {
-                Timber.e("IllegalArgumentException")
+                Timber.e("IllegalArgumentException : ${e.message}")
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -468,7 +467,7 @@ object WifiController  {
                 sleep(50)
             }
 
-            if ( comparaSSID(wifiManager.connectionInfo.ssid, ssid) ) {
+            if ( comparaSSID(newNetwork, ssid) ) {
                 ret = true
                 Timber.i("=====>>>> Sucesso ao conectar em  SSID : ${ssid}");
             } else {
@@ -519,6 +518,7 @@ object WifiController  {
 
 
 
+    @Suppress("VARIABLE_WITH_REDUNDANT_INITIALIZER")
     fun comparaSSID(s1:String?, s2:String?) : Boolean {
         var start=0
         var end=0

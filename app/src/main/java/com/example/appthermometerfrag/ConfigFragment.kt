@@ -2,6 +2,8 @@ package com.example.appthermometerfrag
 
 import android.content.Context
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -20,10 +22,10 @@ private const val ARG_PASSWD_REDE = "passwd"
  * Use the [FindMacFragment.newInstance()] factory method to
  * create an instance of this fragment.
  */
-class FindMacFragment : Fragment() , ConnectToArduinoAPAndConfigure.ConnectToAP {
+class ConfigFragment : Fragment() , ConnectToArduinoAPAndConfigure.ConnectToAP {
     private var listener : FindMacListener? = null
-    private var ssidDaRede: String? = ""
-    private var passwdDaRede: String? = ""
+    private var ssidDaRede: String = ""
+    private var passwdDaRede: String = ""
     private lateinit var buttonConfig : Button
     private lateinit var buttonReset : Button
     private lateinit var progressBar : ProgressBar
@@ -31,16 +33,18 @@ class FindMacFragment : Fragment() , ConnectToArduinoAPAndConfigure.ConnectToAP 
     private lateinit var edt_ssid : EditText
     private lateinit var edt_passwd : EditText
 
+
     interface FindMacListener {
         fun onMacFinded(mac : String?)
         fun onMacFinished()
     }
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            ssidDaRede = it.getString(ARG_SSID_REDE)
-            passwdDaRede = it.getString(ARG_PASSWD_REDE)
+            ssidDaRede = it.getString(ARG_SSID_REDE) ?: ""
+            passwdDaRede = it.getString(ARG_PASSWD_REDE) ?: ""
         }
         Timber.i("onCreate de FindMacFragment(${ssidDaRede}, ${passwdDaRede})")
     }
@@ -50,7 +54,7 @@ class FindMacFragment : Fragment() , ConnectToArduinoAPAndConfigure.ConnectToAP 
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        var fragView =  inflater.inflate(R.layout.fragment_find_mac, container, false)
+        var fragView =  inflater.inflate(R.layout.fragment_config, container, false)
 
         Timber.i("onCreateView de FindMacFragment")
 
@@ -66,6 +70,35 @@ class FindMacFragment : Fragment() , ConnectToArduinoAPAndConfigure.ConnectToAP 
         edt_ssid = fragView.findViewById(R.id.et_ssidDaRede)
         edt_passwd = fragView.findViewById(R.id.et_passwd)
 
+        edt_ssid.setText(ssidDaRede)
+        edt_passwd.setText(passwdDaRede)
+
+        edt_ssid.isEnabled = false
+
+        // Se passar senha significa que esta usando o Tabet como AP e não podemos alterar os valores
+        if ( passwdDaRede.length > 0) {
+            edt_passwd.isEnabled = false
+        }
+
+        // TODO: Sumir abaixo
+        edt_passwd.setText("corachico")
+        buttonConfig.isEnabled = true
+
+
+        edt_passwd.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                Timber.i("Ficou assim: [$s]")
+            }
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                Timber.i("Como esta ficando [$s]")
+                if ( (s?.length ?: 0) > 0 ) {
+                    buttonConfig.isEnabled = true
+                }
+            }
+        })
+
+
 
         progressBar = fragView.findViewById(R.id.progressBar)
         label_doing = fragView.findViewById(R.id.tv_doing)
@@ -73,7 +106,13 @@ class FindMacFragment : Fragment() , ConnectToArduinoAPAndConfigure.ConnectToAP 
         buttonConfig.setOnClickListener {
             buttonConfig.isEnabled = false
             Timber.i("Click no buttonConfig")
-            connectToAccessPointAndGetMacAddress()
+
+            ssidDaRede = edt_ssid.text.toString()
+            passwdDaRede = edt_passwd.text.toString()
+
+            Timber.i("ssidDaRede=[$ssidDaRede] passwdDaRede=$[{passwdDaRede}] " )
+
+            ConnectToArduinoAPAndConfigure(this, ssidDaRede, passwdDaRede).execute(20_000)
         }
 
         if ( view != null) {
@@ -105,8 +144,8 @@ class FindMacFragment : Fragment() , ConnectToArduinoAPAndConfigure.ConnectToAP 
     companion object {
         const val ARG_TEXT = "Text"
         const val ARG_NUMBER = "Number"
-        fun newInstance(ssidDaRede:String, passwdDaRede:String) : FindMacFragment{
-            var fragment = FindMacFragment()
+        fun newInstance(ssidDaRede:String, passwdDaRede:String) : ConfigFragment{
+            var fragment = ConfigFragment()
             var args = Bundle()
 
             Timber.i("newInstance de FindMacFragment(${ssidDaRede}, ${passwdDaRede})")
@@ -152,7 +191,4 @@ class FindMacFragment : Fragment() , ConnectToArduinoAPAndConfigure.ConnectToAP 
         }
     }
 
-    fun connectToAccessPointAndGetMacAddress() {
-        ConnectToArduinoAPAndConfigure(this, ssidDaRede!!, passwdDaRede!!).execute(20_000)
-    }
 }

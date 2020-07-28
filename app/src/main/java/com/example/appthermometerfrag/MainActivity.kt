@@ -1,15 +1,13 @@
 package com.example.appthermometerfrag
 
-import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
-import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.activity_main.*
 import timber.log.Timber
 
-class MainActivity : AppCompatActivity() , FindMacFragment.FindMacListener {
-    lateinit var findMacFragment : FindMacFragment
+class MainActivity : AppCompatActivity() , ConfigFragment.FindMacListener {
+    lateinit var configFragment : ConfigFragment
 
     var nomeDaRedeWifi: String = ""
     var passwordDaRedeWifi: String = ""
@@ -41,7 +39,7 @@ class MainActivity : AppCompatActivity() , FindMacFragment.FindMacListener {
 
     override fun onMacFinished() {
         Timber.i("onMacFinished")
-        btn_findMac.visibility = View.VISIBLE
+        btn_config.visibility = View.VISIBLE
         tv_mostraMac.visibility = View.VISIBLE
         container_a.visibility = View.GONE
     }
@@ -62,13 +60,16 @@ class MainActivity : AppCompatActivity() , FindMacFragment.FindMacListener {
         val fxName = object{}.javaClass.enclosingMethod?.name
         Timber.e("#### ${fxName}  AAA ####")
 
+        nomeDaRedeWifi = ""
+        passwordDaRedeWifi = ""
+
         if ( WifiController.wifiManager.isWifiEnabled) {
             var wifiConfig= WifiController.getWiFiConfig("\"" + ArduinoWifiDevice.APDefaultSSID + "\"")
 
             Timber.e("#### ${fxName}  BBB ####")
 
             container_b.visibility = View.VISIBLE
-            btn_startupError.setText("  Avaliando Rede... \n  Aguarde... ")
+             btn_startupError.setText("  Avaliando Rede... \n  Aguarde... ")
             btn_startupError.isEnabled = false
 
             Timber.e("#### ${fxName}  CCC ####")
@@ -76,6 +77,7 @@ class MainActivity : AppCompatActivity() , FindMacFragment.FindMacListener {
             if ( wifiConfig != null) {
 
                 // Remove ArduinoSSID da lista de redes cadastradas
+                @Suppress("DEPRECATION")
                 if ( WifiController.wifiManager.removeNetwork(wifiConfig.networkId) ) {
                     Timber.e("Removendo ${ArduinoWifiDevice.APDefaultSSID}")
                     errorMessage="\n Rede \"${ArduinoWifiDevice.APDefaultSSID}\" precisa \n Ser removida \n (Clique para validar Remoção) \n "
@@ -92,7 +94,6 @@ class MainActivity : AppCompatActivity() , FindMacFragment.FindMacListener {
                 }
             } else {
                 nomeDaRedeWifi = WifiController.getCurrentSSID()
-
                 if (nomeDaRedeWifi.length == 0) {
                     errorMessage="\nSem conexão WIFI ativa.\nFavor conectar na mesma\nrede WIFI na qual o \nTermometro deverá ser conectado\n(Ajuste e clique no botão)\n"
                 } else if (nomeDaRedeWifi.contains(ArduinoWifiDevice.APDefaultSSID)) {
@@ -120,13 +121,13 @@ class MainActivity : AppCompatActivity() , FindMacFragment.FindMacListener {
             Timber.e("#### findIP(TIMEOUT_TO_FIND_IP) CCC ####") // TODO:
         } else {
             // Vamos habilitar painel para localizar e configurar o Arduino Access Point
-            btn_findMac.setOnClickListener {
-                findMacFragment = FindMacFragment.newInstance(nomeDaRedeWifi, passwordDaRedeWifi)
-                btn_findMac.visibility = View.GONE
+            btn_config.setOnClickListener {
+                configFragment = ConfigFragment.newInstance(nomeDaRedeWifi, passwordDaRedeWifi)
+                btn_config.visibility = View.GONE
                 tv_mostraMac.visibility = View.GONE
                 container_a.visibility = View.VISIBLE
                 supportFragmentManager.beginTransaction()
-                    .replace(R.id.container_a, findMacFragment)
+                    .replace(R.id.container_a, configFragment)
                     .addToBackStack(null)
                     .commit()
             }

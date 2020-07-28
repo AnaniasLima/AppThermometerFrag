@@ -5,11 +5,11 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:visibility="visible"
-    tools:context=".FindMacFragment">
+    tools:context=".ConfigFragment">
 
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/findMacPanel"
+        android:id="@+id/configPanel"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="visible"
