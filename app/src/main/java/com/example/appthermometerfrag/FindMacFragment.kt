@@ -7,24 +7,29 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.fragment_find_mac.*
+import android.widget.EditText
+import android.widget.ProgressBar
+import android.widget.TextView
 import timber.log.Timber
 import java.lang.RuntimeException
 
-private const val ARG_IP = "ip"
-private const val ARG_PORT = "port"
+private const val ARG_SSID_REDE= "ssid"
+private const val ARG_PASSWD_REDE = "passwd"
 
 /**
  * Use the [FindMacFragment.newInstance()] factory method to
  * create an instance of this fragment.
  */
-class FindMacFragment : Fragment() {
+class FindMacFragment : Fragment() , ConnectToArduinoAPAndConfigure.ConnectToAP {
     private var listener : FindMacListener? = null
-    private var ip: String? = null
-    private var port: Int = 0
-    private lateinit var buttonOk : Button
-
+    private var ssidDaRede: String? = ""
+    private var passwdDaRede: String? = ""
+    private lateinit var buttonConfig : Button
+    private lateinit var buttonReset : Button
+    private lateinit var progressBar : ProgressBar
+    private lateinit var label_doing : TextView
+    private lateinit var edt_ssid : EditText
+    private lateinit var edt_passwd : EditText
 
     interface FindMacListener {
         fun onMacFinded(mac : String?)
@@ -34,10 +39,10 @@ class FindMacFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            ip = it.getString(ARG_IP)
-            port = it.getInt(ARG_PORT)
+            ssidDaRede = it.getString(ARG_SSID_REDE)
+            passwdDaRede = it.getString(ARG_PASSWD_REDE)
         }
-        Timber.i("onCreate de FindMacFragment(${ip}, ${port})")
+        Timber.i("onCreate de FindMacFragment(${ssidDaRede}, ${passwdDaRede})")
     }
 
     override fun onCreateView(
@@ -47,16 +52,28 @@ class FindMacFragment : Fragment() {
         // Inflate the layout for this fragment
         var fragView =  inflater.inflate(R.layout.fragment_find_mac, container, false)
 
-
         Timber.i("onCreateView de FindMacFragment")
 
         fragView.visibility = View.VISIBLE
 
-        buttonOk = fragView.findViewById(R.id.btn_teste1)
-        buttonOk.setOnClickListener {
-            Timber.i("Click no buttonOk")
-            listener?.onMacFinded("11.22.33.44.55")
-            getActivity()?.onBackPressed()
+        buttonConfig = fragView.findViewById(R.id.btn_configThermometer)
+        buttonConfig.isEnabled = false
+
+        buttonReset = fragView.findViewById(R.id.btn_resetThermometer)
+        buttonReset.isEnabled = true
+
+
+        edt_ssid = fragView.findViewById(R.id.et_ssidDaRede)
+        edt_passwd = fragView.findViewById(R.id.et_passwd)
+
+
+        progressBar = fragView.findViewById(R.id.progressBar)
+        label_doing = fragView.findViewById(R.id.tv_doing)
+
+        buttonConfig.setOnClickListener {
+            buttonConfig.isEnabled = false
+            Timber.i("Click no buttonConfig")
+            connectToAccessPointAndGetMacAddress()
         }
 
         if ( view != null) {
@@ -86,26 +103,56 @@ class FindMacFragment : Fragment() {
     }
 
     companion object {
-        val ArduinoSSID = "8266_THERMOMETER"
-        val ArduinoPASSWD = "nana12345"
-        val ArduinoAccessPointIP = "192.168.4.1"
-        val ArduinoAccessPointPort = 81
-
-
         const val ARG_TEXT = "Text"
         const val ARG_NUMBER = "Number"
-        fun newInstance(ip:String, port:Int) : FindMacFragment{
+        fun newInstance(ssidDaRede:String, passwdDaRede:String) : FindMacFragment{
             var fragment = FindMacFragment()
             var args = Bundle()
 
-            Timber.i("newInstance de FindMacFragment(${ip}, ${port})")
+            Timber.i("newInstance de FindMacFragment(${ssidDaRede}, ${passwdDaRede})")
 
-            args.putString(ARG_IP, ip)
-            args.putInt(ARG_PORT, port)
+            args.putString(ARG_SSID_REDE, ssidDaRede)
+            args.putString(ARG_PASSWD_REDE, passwdDaRede)
             fragment.arguments = args
 
             return fragment
         }
+    }
 
+
+    override fun connectArduinoAPProgress(state: OperationState, progressPerc: Int, mac: String) {
+        var progress = progressPerc
+
+        if ( progress > 100) progress = 100
+
+        Timber.i("connectAPArduinoProgress. Flag=${state}   progress=$progress   mac=$mac")
+
+        when (state) {
+            OperationState.START -> {
+                progressBar.visibility = View.VISIBLE
+                label_doing.text = mac
+                Timber.i("connectAPArduinoProgress. Atualizando label_doing   text=$mac")
+            }
+            OperationState.PROGRESS -> {
+                progressBar.progress = progress
+                label_doing.text = mac
+            }
+            OperationState.FINISH -> {
+                label_doing.text = mac
+                progressBar.progress = 0
+                progressBar.visibility = View.INVISIBLE
+                if ( ArduinoWifiDevice.macDevice != "") {
+                    listener?.onMacFinded(ArduinoWifiDevice.macDevice)
+                    listener?.onMacFinished()
+                    getActivity()?.onBackPressed()
+                } else {
+                    buttonConfig.isEnabled = true
+                }
+            }
+        }
+    }
+
+    fun connectToAccessPointAndGetMacAddress() {
+        ConnectToArduinoAPAndConfigure(this, ssidDaRede!!, passwdDaRede!!).execute(20_000)
     }
 }

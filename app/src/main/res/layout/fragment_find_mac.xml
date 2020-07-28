@@ -3,22 +3,140 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:visibility="gone"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:visibility="visible"
     tools:context=".FindMacFragment">
 
-    <Button
-        android:id="@+id/btn_teste1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Find"
-        android:layout_gravity="center_horizontal"
-        android:background="@android:color/holo_red_light"
-        android:visibility="visible"/>
 
-    <TextView
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/findMacPanel"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_height="match_parent"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/gl_vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_begin="154dp" />
+
+        <LinearLayout
+            android:id="@+id/top_panel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@color/blue"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:visibility="visible"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <Button
+                android:id="@+id/btn_configThermometer"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_vertical"
+                android:layout_margin="10dp"
+                android:background="@android:color/holo_green_light"
+                android:ems="10"
+                android:text="Configurar Termometro"
+                android:visibility="visible" />
+
+            <Button
+                android:id="@+id/btn_resetThermometer"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_vertical"
+                android:layout_margin="10dp"
+                android:background="@android:color/holo_green_light"
+                android:ems="10"
+                android:text="Reset \n Termometro"
+                android:visibility="visible" />
+        </LinearLayout>
+
+
+        <EditText
+            android:id="@+id/et_ssidDaRede"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:gravity="left"
+            android:inputType="text"
+            android:text=""
+            app:layout_constraintBottom_toTopOf="@id/et_passwd"
+            app:layout_constraintStart_toStartOf="@+id/gl_vertical"
+            app:layout_constraintTop_toBottomOf="@+id/top_panel" />
+
+
+        <TextView
+            android:id="@+id/label_ssidDaRede"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp"
+            android:layout_marginBottom="10dp"
+            android:gravity="right"
+            android:text="SSID da rede :"
+            app:layout_constraintBottom_toBottomOf="@+id/et_ssidDaRede"
+            app:layout_constraintEnd_toStartOf="@+id/gl_vertical"
+            app:layout_constraintTop_toTopOf="@id/et_ssidDaRede" />
+
+
+        <EditText
+            android:id="@+id/et_passwd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:gravity="left"
+            android:inputType="textPassword"
+            android:text="corachico"
+            app:layout_constraintBottom_toTopOf="@+id/progressBar"
+            app:layout_constraintStart_toStartOf="@+id/gl_vertical"
+            app:layout_constraintTop_toBottomOf="@+id/et_ssidDaRede" />
+
+        <TextView
+            android:id="@+id/label_senha"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp"
+            android:layout_marginBottom="10dp"
+            android:gravity="right"
+            android:text="Senha :"
+            app:layout_constraintBottom_toBottomOf="@+id/et_passwd"
+            app:layout_constraintEnd_toStartOf="@+id/gl_vertical"
+            app:layout_constraintTop_toTopOf="@id/et_passwd" />
+
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toTopOf="@+id/tv_doing"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:visibility="visible" />
+
+
+        <TextView
+            android:id="@+id/tv_doing"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/blue"
+            android:gravity="center"
+            android:text="Tarefa sendo executada"
+            android:textAlignment="textStart"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
 
 </FrameLayout>
