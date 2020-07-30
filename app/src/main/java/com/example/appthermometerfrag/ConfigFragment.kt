@@ -8,10 +8,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ProgressBar
-import android.widget.TextView
+import android.widget.*
 import timber.log.Timber
 import java.lang.RuntimeException
 
@@ -26,6 +23,7 @@ class ConfigFragment : Fragment() , ConnectToArduinoAPAndConfigure.ConnectToAP {
     private var listener : FindMacListener? = null
     private var ssidDaRede: String = ""
     private var passwdDaRede: String = ""
+    private lateinit var buttonRefresh : Button
     private lateinit var buttonConfig : Button
     private lateinit var buttonReset : Button
     private lateinit var progressBar : ProgressBar
@@ -60,6 +58,10 @@ class ConfigFragment : Fragment() , ConnectToArduinoAPAndConfigure.ConnectToAP {
 
         fragView.visibility = View.VISIBLE
 
+
+        buttonRefresh = fragView.findViewById(R.id.btn_refresh)
+        buttonRefresh.isEnabled = true
+
         buttonConfig = fragView.findViewById(R.id.btn_configThermometer)
         buttonConfig.isEnabled = false
 
@@ -81,9 +83,14 @@ class ConfigFragment : Fragment() , ConnectToArduinoAPAndConfigure.ConnectToAP {
         }
 
         // TODO: Sumir abaixo
-        edt_passwd.setText("corachico")
-        buttonConfig.isEnabled = true
-
+        if ( ssidDaRede == "WiFiResidencial") {
+            edt_passwd.setText("corachico")
+            buttonConfig.isEnabled = true
+        }
+        if ( ssidDaRede == "G76606") {
+            edt_passwd.setText("nana12345")
+            buttonConfig.isEnabled = true
+        }
 
         edt_passwd.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
@@ -98,10 +105,19 @@ class ConfigFragment : Fragment() , ConnectToArduinoAPAndConfigure.ConnectToAP {
             }
         })
 
-
-
         progressBar = fragView.findViewById(R.id.progressBar)
         label_doing = fragView.findViewById(R.id.tv_doing)
+
+        buttonRefresh.setOnClickListener {
+            val new = WifiController.getCurrentSSID()
+            if ( new != ssidDaRede) {
+                ssidDaRede = new
+                passwdDaRede = ""
+                edt_ssid.setText(ssidDaRede)
+                edt_passwd.setText("")
+                Timber.i("Nova Rede: [$new]")
+            }
+        }
 
         buttonConfig.setOnClickListener {
             buttonConfig.isEnabled = false
@@ -112,12 +128,23 @@ class ConfigFragment : Fragment() , ConnectToArduinoAPAndConfigure.ConnectToAP {
 
             Timber.i("ssidDaRede=[$ssidDaRede] passwdDaRede=$[{passwdDaRede}] " )
 
-            ConnectToArduinoAPAndConfigure(this, ssidDaRede, passwdDaRede).execute(20_000)
+            if ( ssidDaRede.contains("unknown")) {
+                var errorMessage="\nRede Wifi <unknown>\n Favor tentar novamente "
+                Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+                activity?.onBackPressed()
+            } else {
+                buttonRefresh.isEnabled = false
+
+                ConnectToArduinoAPAndConfigure(this, ssidDaRede, passwdDaRede).execute(20_000)
+            }
+
+
         }
 
         if ( view != null) {
             Timber.i("view() NOT null em  FindMacFragment em BBBB")
         }
+
         return fragView
     }
 
@@ -186,6 +213,7 @@ class ConfigFragment : Fragment() , ConnectToArduinoAPAndConfigure.ConnectToAP {
                     getActivity()?.onBackPressed()
                 } else {
                     buttonConfig.isEnabled = true
+                    buttonRefresh.isEnabled = true
                 }
             }
         }

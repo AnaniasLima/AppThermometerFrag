@@ -102,28 +102,41 @@ object WifiController  {
 
     private class OpenSocketTh(val host: String, val port: Int) : Thread() {
         var s : Socket? = null
-        override fun run() {
-            try {
-                Timber.e("WWWWWWWW Tentando socket  host=${host}, porta=${port}")
-                sleep(300)
-                s = Socket(host, port)
+        var tenta=0
 
-                if ( s?.isConnected() == true) {
-                    Timber.i("Conectou Socket")
-                } else {
-                    s?.close()
-                    s=null
+        override fun run() {
+            while ( tenta++ < 30 ) {
+                try {
+                    Timber.e("WWWWWWWW Tentando(${tenta}) socket  host=${host}, porta=${port}")
+                    sleep(100)
+                    s = Socket(host, port)
+                    Timber.i("WWWWWWWW voltou de Socket")
+                    if ( s != null ) {
+                        if ( s!!.isConnected() == true) {
+                            Timber.i("WWWWWWWW Conectou Socket")
+                            break
+                        } else {
+                            Timber.i("WWWWWWWW Not null mas não Conectou Socket")
+                            Timber.i("WWWWWWWW close Socket")
+                            s?.close()
+                            s=null
+                        }
+                    } else {
+                        Timber.i("WWWWWWWW NULL Socket")
+                    }
+
+                } catch (e: UnknownHostException) {
+                    Timber.e("WWWWWWWW UnknownHostException : ${e.message}")
+                } catch (e: IOException) {
+                    Timber.e("WWWWWWWW IOException : ${e.message}")
+                } catch (e: SecurityException) {
+                    Timber.e("WWWWWWWW SecurityException : ${e.message}")
+                } catch (e: IllegalArgumentException) {
+                    Timber.e("WWWWWWWW IllegalArgumentException : ${e.message}")
+                } catch (e: Exception) {
+                    Timber.e("WWWWWWWW Exception : ${e.message}")
+                    e.printStackTrace()
                 }
-            } catch (e: UnknownHostException) {
-                Timber.e("UnknownHostException : ${e.message}")
-            } catch (e: IOException) {
-                Timber.e("IOException : ${e.message}")
-            } catch (e: SecurityException) {
-                Timber.e("SecurityException : ${e.message}")
-            } catch (e: IllegalArgumentException) {
-                Timber.e("IllegalArgumentException : ${e.message}")
-            } catch (e: Exception) {
-                e.printStackTrace()
             }
         }
     }
@@ -317,12 +330,13 @@ object WifiController  {
 
         Timber.i("getWiFiConfig   Procurando:[$ssid]")
 
-
-        if ( wifiList.size > 0 ) {
-            // Nomes no vetor estão entra aspas
-            for (item in wifiList){
-                if ( comparaSSID(item.SSID , ssid) ){
-                    return item
+        if ( wifiList != null) {
+            if ( wifiList.size > 0 ) {
+                // Nomes no vetor estão entra aspas
+                for (item in wifiList){
+                    if ( comparaSSID(item.SSID , ssid) ){
+                        return item
+                    }
                 }
             }
         }
@@ -527,9 +541,14 @@ object WifiController  {
             return true
         }
 
-        if ( s1 == null || s2 == null ) {
+        if ( (s1 == null) || (s2 == null) ) {
             return false
         }
+
+        if ( (s1.length == 0) || (s2.length == 0) ) {
+            return false
+        }
+
 
         // ----- S1
         start=0
@@ -545,7 +564,7 @@ object WifiController  {
         while ( s2[end] == '"' ) end--
         var p2 = s2.subSequence(start, end+1)
 
-        Timber.i(String.format("s1=%-20s  s2=%-20s  p1=%-20s p2=%-20s", s1, s2, p1, p2) + " ret=${p1==p2}")
+        //Timber.i(String.format("s1=%-20s  s2=%-20s  p1=%-20s p2=%-20s", s1, s2, p1, p2) + " ret=${p1==p2}")
 
         return p1==p2
 

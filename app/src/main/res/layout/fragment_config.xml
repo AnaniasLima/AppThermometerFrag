@@ -37,6 +37,16 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <Button
+                android:id="@+id/btn_refresh"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_vertical"
+                android:layout_margin="10dp"
+                android:background="@android:color/holo_green_light"
+                android:text="Refresh"
+                android:visibility="visible" />
+
+            <Button
                 android:id="@+id/btn_configThermometer"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
@@ -46,6 +56,7 @@
                 android:ems="10"
                 android:text="Configurar Termometro"
                 android:visibility="visible" />
+
 
             <Button
                 android:id="@+id/btn_resetThermometer"
