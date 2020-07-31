@@ -115,6 +115,20 @@ class ConfigFragment : Fragment() , ConnectToArduinoAPAndConfigure.ConnectToAP {
                 passwdDaRede = ""
                 edt_ssid.setText(ssidDaRede)
                 edt_passwd.setText("")
+
+                // TODO: Sumir abaixo
+                if ( ssidDaRede == "WiFiResidencial") {
+                    passwdDaRede = "corachico"
+                    edt_passwd.setText(passwdDaRede)
+                    buttonConfig.isEnabled = true
+                }
+                if ( ssidDaRede == "G76606") {
+                    passwdDaRede = "nana12345"
+                    edt_passwd.setText(passwdDaRede)
+                    buttonConfig.isEnabled = true
+                }
+
+
                 Timber.i("Nova Rede: [$new]")
             }
         }

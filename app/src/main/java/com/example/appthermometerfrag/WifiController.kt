@@ -21,6 +21,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import timber.log.Timber
 import java.io.*
+import java.lang.Integer.max
+import java.lang.Integer.min
 import java.lang.Thread.sleep
 import java.net.Socket
 import java.net.UnknownHostException
@@ -73,14 +75,13 @@ object WifiController  {
         try {
             osThread.start()
             while ( true ) {
-                tempoDecorrido = System.currentTimeMillis() -  startTime
+                tempoDecorrido = System.currentTimeMillis() - startTime
                 if ( tempoDecorrido >= timeout ) {
                     break
                 }
 
                 progress = (tempoDecorrido * 100 / timeout).toInt()
-
-                if ( progress > 100) progress = 100
+                progress = min(progress, 100)
 
                 caller.wifiOperationProgress(WifiOperation.OPEN_SOCKET, OperationState.PROGRESS, progress, doingNow)
 
@@ -91,8 +92,7 @@ object WifiController  {
                 }
             }
             osThread.interrupt()
-        } catch (e: IOException)
-        {
+        } catch (e: IOException) {
             e.printStackTrace()
         }
 
@@ -105,36 +105,29 @@ object WifiController  {
         var tenta=0
 
         override fun run() {
-            while ( tenta++ < 30 ) {
+            while ( tenta++ < 10 ) {
                 try {
-                    Timber.e("WWWWWWWW Tentando(${tenta}) socket  host=${host}, porta=${port}")
+                    Timber.e("WWWWWW Tentando(${tenta}) socket  host=${host}, porta=${port}")
                     sleep(100)
                     s = Socket(host, port)
-                    Timber.i("WWWWWWWW voltou de Socket")
-                    if ( s != null ) {
-                        if ( s!!.isConnected() == true) {
-                            Timber.i("WWWWWWWW Conectou Socket")
-                            break
-                        } else {
-                            Timber.i("WWWWWWWW Not null mas não Conectou Socket")
-                            Timber.i("WWWWWWWW close Socket")
-                            s?.close()
-                            s=null
-                        }
+                    if ( s?.isConnected() == true) {
+                        Timber.i("Conectou Socket")
+                        break
                     } else {
-                        Timber.i("WWWWWWWW NULL Socket")
+                        Timber.i("close Socket")
+                        s?.close()
+                        s=null
                     }
-
                 } catch (e: UnknownHostException) {
-                    Timber.e("WWWWWWWW UnknownHostException : ${e.message}")
+                    Timber.e("UnknownHostException : ${e.message}")
                 } catch (e: IOException) {
-                    Timber.e("WWWWWWWW IOException : ${e.message}")
+                    Timber.e("IOException : ${e.message}")
                 } catch (e: SecurityException) {
-                    Timber.e("WWWWWWWW SecurityException : ${e.message}")
+                    Timber.e("SecurityException : ${e.message}")
                 } catch (e: IllegalArgumentException) {
-                    Timber.e("WWWWWWWW IllegalArgumentException : ${e.message}")
+                    Timber.e("IllegalArgumentException : ${e.message}")
                 } catch (e: Exception) {
-                    Timber.e("WWWWWWWW Exception : ${e.message}")
+                    Timber.e("Exception : ${e.message}")
                     e.printStackTrace()
                 }
             }
